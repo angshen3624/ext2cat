@@ -1,0 +1,24 @@
+Function #1 get_super_block
+This function returns a pointer pointing to the superblock. Superblock is store at an offset position from file system. 
+
+Function #2 block_size
+This function returns the size of a block for a filesystem. Because the information is stored in the superblock table. We simply calculcate the block size by finding the s_log_block_size from superblock table.
+
+Function #3 get_block
+This function returns a pointer pointing to the required block. Because the number of the request block is given, we can find the address by adding fs with block_num * block_size. (block_size is found by calling Function #2)
+
+Function #4 get_block_group
+From the official website, the block group descriptor table starts on the first block following the superblock. Because the size of the superblock and the offset of the superblock is given, we simply return the address with SUPERBLOCK_OFFSET + SUPERBLOCK_SIZE from address of fs.
+
+Function #5 get_inode
+bg_inode_table is stored in the group descriptor struct. Thus, we get the address of the bg_inode_table by calling Function #4. Then we return the address with displacement of inode_num * size of an inode struct.
+
+Function #6 get_inode_from_dir
+This function returns the inode number of a file or 0 if the file does not exists. We find the directory entry block by calling Function #3. A directory entry block contains the name of the block and its inode number. Thus we run a loop to compare the names until any inode is found or all blocks has been looked over. 
+
+Function #7 get_inode_by_path
+At the beginning, the path argumment is splitted into a char vector. To find the file, we find each directory or file with the same name stored in the path vector iteratively by calling Function #6. The directory entry block also contains the file type. The loop stops when the file type is not directory, which means the target file is found.
+
+Extra points
+We finished extra by adding piece of code in ext2cat.c.
+After all direct blocks are read, the rest blocks with number bigger than EXT2_NDIR_BLOCKS are indirect blocks. Same as what we do for direct block, we updates the bytes_read and bytes_to_read in each iteration. The loop stops when no block to read.
